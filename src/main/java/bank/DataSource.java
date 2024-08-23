@@ -1,11 +1,13 @@
 package bank;
 
-import java.sql.Connection;
+import java.sql.Connection; 
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+// Connection class is used to represent a connection to a database
+// java.sql is a java package contains built-in classes that support database interactions
 public class DataSource {
   
   // import Connection from java.sql
@@ -53,14 +55,19 @@ public class DataSource {
   }
 
   public static Account getAccount(int accountId){
+    // use ? for placeholder for security purpose
+    // since appending raw user input to a string that will be used to query a database is anacceptable
     String sql = "select * from accounts where id = ?";
     Account account = null;
 
-    try (Connection connection = connect();
-          PreparedStatement statement = connection.prepareStatement(sql)){
-            statement.setInt(1, accountId);
-
-            try(ResultSet resultSet = statement.executeQuery()){
+    // try-with-resources statement is a special form of the try statement that 
+    // ensures resources are closed automatically when the block exits.
+    try (Connection connection = connect(); // Try-with-resources for Connection
+          PreparedStatement statement = connection.prepareStatement(sql)){ // Try-with-resources for PreparedStatement
+            statement.setInt(1, accountId); // PreparedStatement is java class used to execute a SQL statement
+            // ResultSet is the Java class which represents the data returned from a
+            // database query
+            try(ResultSet resultSet = statement.executeQuery()){ // Try-with-resources for ResultSet
               account = new Account(
                 resultSet.getInt("id"),
                 resultSet.getString("type"),
@@ -72,9 +79,22 @@ public class DataSource {
           }
           return account;
   }
-  public static void main(String[] args){
-    Customer customer = getCustomer("twest8o@friendfeed.com");
-    Account account = getAccount(customer.getAccountId());
-    System.out.println(account.getBalance());
+
+  public static void updateAccountBalance(int accountId, double balance){
+    String sql = "update accounts set balance = ? where id = ?";
+    try(
+      Connection connection = connect();
+      PreparedStatement statement = connection.prepareStatement(sql);
+    ){
+      statement.setDouble(1, balance);
+      statement.setInt(2, accountId);
+
+      statement.executeUpdate(); // with insert, delete, update, we use executeUpdate()
+
+    }catch(SQLException e){
+      e.printStackTrace();
+    }
+    
   }
+
 }

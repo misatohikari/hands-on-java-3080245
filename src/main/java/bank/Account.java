@@ -1,5 +1,7 @@
 package bank;
 
+import bank.exceptions.AmountException;
+
 public class Account {
   // encapsulation - Hiding data so that it cannot be directly accessed outside of its class
   private int id;
@@ -33,11 +35,31 @@ public class Account {
     return this.balance;
   }
 
-  public void setBalance(double balance) {
+  public void setBalance(double balance) { 
     this.balance = balance;
   }
 
+  public void deposit(double amount) throws AmountException{// in the header we have to specify which exception is thrown in this func
+    if (amount < 1){
+      throw new AmountException("The minimum deposit is 1.00");
+    }else{
+      double newBalance = balance + amount;
+      setBalance(newBalance);
+      DataSource.updateAccountBalance(id, newBalance); //update the database itself
+    }
+  }
 
+  public void withdraw(double amount) throws AmountException{
+    if (amount < 1) {
+      throw new AmountException("The minimum withdraw is 1.00");
+    } else if (amount > getBalance()){
+      throw new AmountException("You do not have sufficient funds for this withdrawal");
+    } else{
+      double newBalance = balance - amount;
+      setBalance(newBalance);
+      DataSource.updateAccountBalance(id, newBalance);
+    }
+  }
 
 
   
